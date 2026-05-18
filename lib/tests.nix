@@ -96,8 +96,13 @@ let
 
         # Get qemu-common library functions for this pkgs
         qemu-common = qemu-common-lib pkgs;
+
+        qemuPkg = pkgs.qemu_test.override {
+          canokeySupport = enableCanokey;
+        };
+
         # qemuBinary returns a string like: "/nix/store/.../qemu-system-x86_64 -machine accel=kvm:tcg -cpu max"
-        qemuBinaryString = qemu-common.qemuBinary pkgs.qemu_test;
+        qemuBinaryString = qemu-common.qemuBinary qemuPkg;
 
         # for installation we skip /dev/vda because it is the test runner disk
 
@@ -301,6 +306,9 @@ let
                 "-device pci-ohci,id=usb-bus"
                 "-device canokey,bus=usb-bus.0,file=/tmp/canokey-file"
               ];
+
+              # REMOVEME when Canokey support is enabled upstream
+              qemu.package = lib.mkForce qemuPkg;
             };
 
             # useful for debugging via repl
